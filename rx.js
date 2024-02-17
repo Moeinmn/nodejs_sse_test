@@ -15,16 +15,22 @@ async function name() {
 
   const reader = response.body.pipeThrough(new TextDecoderStream()).getReader();
 
-  return new Observable(async observer => {
-    while (true) {
-      const { value, done } = await reader.read();
-      if (done) {
-        observer.complete();
-        break;
+  return new Observable(observer => {
+    (async function readStream() {
+      try {
+        while (true) {
+          const { value, done } = await reader.read();
+          if (done) {
+            observer.complete();
+            break;
+          }
+          console.log('Fetch Received:', value);
+          observer.next(value);
+        }
+      } catch (error) {
+        observer.error(error);
       }
-      console.log('Fetch Recieved:', value);
-      observer.next(value);
-    }
+    })();
   });
 }
 
